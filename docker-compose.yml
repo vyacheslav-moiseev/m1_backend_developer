@@ -1,0 +1,85 @@
+version: "3.9"
+
+services:
+
+  # PHP App (Laravel)
+  app:
+    build:
+      context: .
+      dockerfile: docker/app/Dockerfile
+    container_name: dynamic_pricing_app
+    volumes:
+      - ./:/var/www/html
+    depends_on:
+      - mysql
+      - redis
+    environment:
+      - QUEUE_CONNECTION=redis
+      - CACHE_DRIVER=redis
+      - SESSION_DRIVER=redis
+
+  # Nginx
+  nginx:
+    image: nginx:1.25-alpine
+    container_name: dynamic_pricing_nginx
+    ports:
+      - "80:80"
+    volumes:
+      - ./:/var/www/html
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - app
+
+  # MySQL
+  mysql:
+    image: mysql:8.0
+    container_name: dynamic_pricing_mysql
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: pricing
+      MYSQL_USER: pricing
+      MYSQL_PASSWORD: pricing
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+  # Redis
+  redis:
+    image: redis:7-alpine
+    container_name: dynamic_pricing_redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+  # Queue Worker (Horizon)
+  queue:
+    build:
+      context: .
+      dockerfile: docker/app/Dockerfile
+    container_name: dynamic_pricing_queue
+    command: php artisan horizon
+    volumes:
+      - ./:/var/www/html
+    depends_on:
+      - redis
+      - mysql
+
+  # Scheduler (CRON)
+  scheduler:
+    build:
+      context: .
+      dockerfile: docker/app/Dockerfile
+    container_name: dynamic_pricing_scheduler
+    command: /usr/local/bin/schedule-cron
+    volumes:
+      - ./:/var/www/html
+      - ./docker/scheduler/cron:/etc/cron.d/artisan
+    depends_on:
+      - redis
+      - app
+
+volumes:
+  mysql_data:
+  redis_data:
