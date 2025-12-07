@@ -37,15 +37,10 @@
     * Redis используется для хранения актуальных цен и коэффициентов.
     * Быстрый доступ к ценам без постоянных запросов к MySQL.
 
-* **Очереди и воркеры:**
-
-    * Laravel Queue для обработки задач и событий.
-    * Horizon можно подключить для управления очередями (не установлен в текущей версии).
 
 * **Тестирование:**
 
     * Cache проверяется через `php artisan tinker`.
-    * Очереди и логи проверены (`dispatch()` и `queue:work`).
 
 * **CRON / Scheduler:**
 
@@ -62,7 +57,6 @@
 ```bash
 docker-compose up -d
 docker exec -it dynamic_pricing_app php artisan migrate
-docker exec -it dynamic_pricing_app php artisan queue:work
 docker exec -it dynamic_pricing_app php artisan tinker
 ```
 
