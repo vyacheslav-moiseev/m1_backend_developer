@@ -37,10 +37,10 @@ services:
     ports:
       - "3306:3306"
     environment:
-      MYSQL_ROOT_PASSWORD: root
+      MYSQL_ROOT_PASSWORD: secret
       MYSQL_DATABASE: pricing
       MYSQL_USER: pricing
-      MYSQL_PASSWORD: pricing
+      MYSQL_PASSWORD: secret
     volumes:
       - mysql_data:/var/lib/mysql
 
